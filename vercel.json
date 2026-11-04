@@ -1,11 +1,12 @@
 {
+  "cleanUrls": true,
   "functions": {
     "api/index.py": {
-      "includeFiles": "{Backend,Frontend}/**",
+      "includeFiles": "Backend/**",
       "maxDuration": 30
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
+    { "source": "/api/(.*)", "destination": "/api/index" }
   ]
 }
