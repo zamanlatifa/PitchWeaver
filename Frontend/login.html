@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PitchWeaver · Sign In</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap">
+  <style>
+    :root {
+      --paper: #ffffff;
+      --ink: #1c1917;
+      --muted: #78716c;
+      --rule: #e7e5e4;
+      --rule-strong: #d6d3d1;
+      --orange: #ea580c;
+      --orange-ink: #c2410c;
+      --green: #15803d;
+      --red: #b91c1c;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-display: 'Bricolage Grotesque', var(--font);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--paper);
+      font-family: var(--font);
+      color: var(--ink);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .side {
+      background: var(--orange);
+      color: #ffffff;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+    .side-brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; }
+    .side-brand span { font-size: 1.8rem; line-height: 1; }
+    .side h1 { font-family: var(--font-display); font-size: 2.8rem; font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; max-width: 13ch; }
+    .side p { font-size: 1.02rem; max-width: 36ch; margin-top: 14px; opacity: 0.92; }
+    .staff { position: absolute; left: 0; right: 0; top: 46%; height: 72px; }
+    .staff i { display: block; height: 1px; background: rgba(255,255,255,0.35); margin-bottom: 17px; }
+    .card {
+      width: 100%;
+      max-width: 380px;
+      margin: auto;
+      padding: 48px 24px;
+    }
+    .card h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; margin-bottom: 20px; }
+    .tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--rule); margin-bottom: 24px; }
+    .tab {
+      padding: 0 0 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      font-family: inherit;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      background: none;
+    }
+    .tab.active { color: var(--ink); border-bottom-color: var(--orange); }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.88rem; color: var(--muted); margin-bottom: 6px; }
+    .field input {
+      width: 100%;
+      border: 1px solid var(--rule-strong);
+      border-radius: 8px;
+      padding: 11px 13px;
+      color: var(--ink);
+      font-size: 0.98rem;
+      font-family: inherit;
+      outline: none;
+    }
+    .field input:focus { border-color: var(--orange); }
+    .field input::placeholder { color: #a8a29e; }
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--orange);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { background: var(--orange-ink); }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+    .banner { display: none; font-size: 0.9rem; margin-bottom: 16px; }
+    .banner.error   { color: var(--red); }
+    .banner.success { color: var(--green); }
+    .banner.visible { display: block; }
+    .forgot-row { margin-top: 16px; }
+    .link-btn { background: none; border: none; color: var(--muted); font-size: 0.9rem; font-family: inherit; cursor: pointer; }
+    .link-btn:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .about-row { margin-top: 32px; font-size: 0.9rem; }
+    .about-row a { color: var(--orange-ink); text-decoration: none; font-weight: 600; }
+    .about-row a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    :focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @media (max-width: 820px) {
+      body { grid-template-columns: 1fr; }
+      .side { padding: 28px 20px; min-height: 220px; }
+      .side h1 { font-size: 2rem; }
+      .staff { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="side">
+    <div class="side-brand"><span>𝄞</span> PitchWeaver</div>
+    <div class="staff"><i></i><i></i><i></i><i></i><i></i></div>
+    <div>
+      <h1>Train your ear, one interval at a time.</h1>
+      <p>PitchWeaver listens to how you answer and adjusts your practice to help with the intervals you find tricky.</p>
+    </div>
+  </aside>
+
+  <div class="card">
+    <h2>Welcome</h2>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-login"  onclick="switchTab('login')">Sign In</button>
+      <button class="tab"        id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <div id="banner" class="banner"></div>
+
+    <form id="form-login" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-submit" id="btn-login">Sign In</button>
+      <div class="forgot-row">
+        <button type="button" class="link-btn" onclick="showReset()">Forgot password?</button>
+      </div>
+    </form>
+
+    <form id="form-reset" style="display:none" onsubmit="handleReset(event)">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="reset-email" placeholder="you@example.com" required>
+      </div>
+
+      <div id="reset-step2" style="display:none">
+        <div class="field">
+          <label>6-digit code</label>
+          <input type="text" id="reset-code" placeholder="123456" inputmode="numeric"
+                 pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code">
+        </div>
+        <div class="field">
+          <label>New password (at least 8 characters)</label>
+          <input type="password" id="reset-password" placeholder="••••••••" minlength="8">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-reset">Send Me a Code</button>
+      <div class="forgot-row">
+        <button type="button" class="link-btn" onclick="backToLogin()">Back to sign in</button>
+      </div>
+    </form>
+
+    <form id="form-signup" style="display:none" onsubmit="handleSignup(event)">
+      <div class="field">
+        <label>Your Name</label>
+        <input type="text" id="signup-name" placeholder="Mozart" required>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label>Password (at least 8 characters)</label>
+        <input type="password" id="signup-password" placeholder="••••••••" required minlength="8">
+      </div>
+      <button type="submit" class="btn-submit" id="btn-signup">Create Account</button>
+    </form>
+
+    <div class="about-row"><a href="about.html">About PitchWeaver</a></div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.getElementById('tab-login').classList.toggle('active',  tab === 'login');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+      document.getElementById('form-login').style.display  = tab === 'login'  ? '' : 'none';
+      document.getElementById('form-signup').style.display = tab === 'signup' ? '' : 'none';
+      document.getElementById('form-reset').style.display  = 'none';
+      hideBanner();
+    }
+
+    let resetCodeSent = false;
+
+    function showReset() {
+      document.getElementById('form-login').style.display  = 'none';
+      document.getElementById('form-signup').style.display = 'none';
+      document.getElementById('form-reset').style.display  = '';
+      hideBanner();
+    }
+
+    function backToLogin() {
+      resetCodeSent = false;
+      document.getElementById('reset-step2').style.display = 'none';
+      document.getElementById('btn-reset').textContent     = 'Send Me a Code';
+      switchTab('login');
+    }
+
+    async function handleReset(e) {
+      e.preventDefault();
+      hideBanner();
+      const btn = document.getElementById('btn-reset');
+      btn.disabled  = true;
+      btn.innerHTML = '<span class="spinner"></span> Please wait…';
+
+      try {
+        if (!resetCodeSent) {
+          const res  = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: document.getElementById('reset-email').value }),
+          });
+          const data = await res.json();
+          if (!res.ok) { showBanner(data.error || 'Something went wrong. Please try again.'); return; }
+
+          resetCodeSent = true;
+          document.getElementById('reset-step2').style.display = '';
+          document.getElementById('reset-code').required       = true;
+          document.getElementById('reset-password').required   = true;
+          showBanner(
+            data.delivery === 'console'
+              ? 'Your code is ready. In testing mode it is shown in the server window. Enter it below.'
+              : 'If this email has an account, we have sent you a code. Check your inbox.',
+            'success'
+          );
+        } else {
+          const res  = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email:        document.getElementById('reset-email').value,
+              code:         document.getElementById('reset-code').value,
+              new_password: document.getElementById('reset-password').value,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) { showBanner(data.error || 'Something went wrong. Please try again.'); return; }
+
+          showBanner('All done! You can now sign in with your new password.', 'success');
+          setTimeout(backToLogin, 1500);
+        }
+      } catch {
+        showBanner('Can\'t connect right now. Please try again.');
+      } finally {
+        btn.disabled  = false;
+        btn.innerHTML = resetCodeSent ? 'Save New Password' : 'Send Me a Code';
+      }
+    }
+
+    function showBanner(msg, type = 'error') {
+      const el = document.getElementById('banner');
+      el.textContent = msg;
+      el.className = `banner ${type} visible`;
+    }
+    function hideBanner() {
+      document.getElementById('banner').className = 'banner';
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.innerHTML = loading
+        ? '<span class="spinner"></span> Please wait…'
+        : (btnId === 'btn-login' ? 'Sign In' : 'Create Account');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideBanner();
+      setLoading('btn-login', true);
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email:    document.getElementById('login-email').value,
+            password: document.getElementById('login-password').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showBanner(data.error || 'We couldn\'t sign you in. Please try again.'); return; }
+        showBanner('Welcome back, ' + data.user.name + '!', 'success');
+        setTimeout(() => { window.location.href = '/'; }, 800);
+      } catch {
+        showBanner('Can\'t connect right now. Please try again.');
+      } finally {
+        setLoading('btn-login', false);
+      }
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      hideBanner();
+      setLoading('btn-signup', true);
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name:     document.getElementById('signup-name').value,
+            email:    document.getElementById('signup-email').value,
+            password: document.getElementById('signup-password').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showBanner(data.error || 'We couldn\'t create your account. Please try again.'); return; }
+        showBanner('Your account is ready!', 'success');
+        setTimeout(() => { window.location.href = '/'; }, 900);
+      } catch {
+        showBanner('Can\'t connect right now. Please try again.');
+      } finally {
+        setLoading('btn-signup', false);
+      }
+    }
+
+    fetch('/api/auth/me').then(r => {
+      if (r.ok) window.location.href = '/';
+    });
+  </script>
+</body>
+</html>

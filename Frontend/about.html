@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PitchWeaver · About</title>
+  <link rel="stylesheet" href="style.css?v=20261101b">
+  <style>
+    body { overflow: auto; height: auto; min-height: 100vh; }
+    .about-text { margin-top: 24px; font-size: 1.08rem; line-height: 1.8; max-width: 62ch; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <a class="header-brand" href="/">
+      <span class="header-clef">𝄞</span>
+      <span class="header-title">PitchWeaver</span>
+    </a>
+    <nav class="header-nav">
+      <a class="nav-link" href="/">Practice</a>
+      <a class="nav-link" href="dashboard.html">My Progress</a>
+      <a class="nav-link active" href="about.html">About</a>
+      <button class="nav-link" onclick="showSaveReportDialog()">Save Report</button>
+      <button class="nav-link nav-signout" onclick="handleLogout()">Sign Out</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <h1>About</h1>
+    <p class="about-text">My name is Jahan. I am currently in the tenth grade, preparing for my ICSE board examinations. Coding and music have always been close to my heart. They have been key parts to shape me into the person I am today. Since my early days as a pianist, one of the hardest skills I have had to develop is ear training. Building a strong ear is hard to do individually, especially because you don’t know where you’re going wrong. So I decided to create PitchWeaver. PitchWeaver is an adaptive ear training engine built for musicians of all levels. It analyzes weaknesses and their patterns, adapting a user’s training accordingly. Through PitchWeaver, I have integrated my interests in coding and music to make ear training an adaptive and constructive experience.</p>
+  </main>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-message" id="modal-message"></div>
+      <div class="modal-actions" id="modal-actions"></div>
+    </div>
+  </div>
+
+  <script src="report.js?v=20261101"></script>
+  <script>
+    'use strict';
+    async function handleLogout() {
+      try { sessionStorage.removeItem('pw_session_state'); } catch {}
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+  </script>
+</body>
+</html>
