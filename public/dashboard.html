@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PitchWeaver · My Progress</title>
+  <link rel="stylesheet" href="style.css?v=20261101b">
+  <style>
+    body { overflow: auto; height: auto; min-height: 100vh; }
+    .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 28px; }
+    .summary-card + .summary-card { border-left: 1px solid var(--rule); padding-left: 20px; }
+    .summary-value { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1.1; color: var(--ink); }
+    .summary-label { font-size: 0.86rem; color: var(--muted); margin-top: 2px; }
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 48px; }
+    .charts-grid > section { margin-top: 0; padding-top: 0; border-top: none; }
+    .chart-row { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--rule); }
+    .chart-box { position: relative; height: 260px; }
+    .report-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    .report-table th { color: var(--muted); font-weight: 500; text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--rule-strong); }
+    .report-table td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+    .acc-pill { font-weight: 700; }
+    .acc-high { color: var(--green); }
+    .acc-mid  { color: var(--orange-ink); }
+    .acc-low  { color: var(--red); }
+    .feedback-headline { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; max-width: 40ch; }
+    .feedback-list { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; max-width: 70ch; }
+    .feedback-list li { padding-left: 4px; }
+    .feedback-list li::marker { color: var(--orange); }
+    .empty-note { color: var(--muted); }
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; gap: 24px; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); row-gap: 18px; }
+      .summary-card + .summary-card { border-left: none; padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <a class="header-brand" href="/">
+      <span class="header-clef">𝄞</span>
+      <span class="header-title">PitchWeaver</span>
+    </a>
+    <nav class="header-nav">
+      <a class="nav-link" href="/">Practice</a>
+      <a class="nav-link active" href="dashboard.html">My Progress</a>
+      <a class="nav-link" href="about.html">About</a>
+      <button class="nav-link" onclick="showSaveReportDialog()">Save Report</button>
+      <button class="nav-link nav-signout" onclick="handleLogout()">Sign Out</button>
+    </nav>
+  </header>
+
+  <main class="page">
+
+    <h1>My progress</h1>
+    <p class="lede">Everything you have practised so far.</p>
+
+    <div class="summary-grid" id="summary-grid">
+      <div class="summary-card"><div class="summary-value" id="sum-total">0</div><div class="summary-label">intervals played</div></div>
+      <div class="summary-card"><div class="summary-value text-mint" id="sum-correct">0</div><div class="summary-label">right</div></div>
+      <div class="summary-card"><div class="summary-value text-gold" id="sum-accuracy">0%</div><div class="summary-label">score</div></div>
+      <div class="summary-card"><div class="summary-value" id="sum-speed">0s</div><div class="summary-label">average answer time</div></div>
+      <div class="summary-card"><div class="summary-value" id="sum-level">Level 1</div><div class="summary-label">current level</div></div>
+    </div>
+
+    <div class="chart-row charts-grid">
+      <section>
+        <h2 class="section-title">Score for each interval</h2>
+        <div class="chart-box"><canvas id="chart-intervals"></canvas></div>
+      </section>
+      <section>
+        <h2 class="section-title">Right and wrong answers</h2>
+        <div class="chart-box"><canvas id="chart-donut"></canvas></div>
+      </section>
+    </div>
+
+    <section>
+      <h2 class="section-title">How your score has changed</h2>
+      <p class="hint">Each point is your score over the 10 answers before it.</p>
+      <div class="chart-box"><canvas id="chart-trend"></canvas></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Interval by interval</h2>
+      <div id="table-wrap"><p class="empty-note">Loading…</p></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Tips for you</h2>
+      <p class="feedback-headline" id="feedback-headline">Loading…</p>
+      <ul class="feedback-list" id="feedback-list"></ul>
+    </section>
+
+  </main>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-message" id="modal-message"></div>
+      <div class="modal-actions" id="modal-actions"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="report.js?v=20261101"></script>
+  <script>
+    'use strict';
+
+    const C = {
+      gold:  '#ea580c', mint: '#16a34a', rose: '#dc2626',
+      ivory: '#1c1917', dim:  '#78716c',
+      grid:  '#f0eeec',
+    };
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    Chart.defaults.color       = C.dim;
+
+    async function handleLogout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    function accClass(a) { return a >= 75 ? 'acc-high' : a >= 50 ? 'acc-mid' : 'acc-low'; }
+
+    function renderSummary(o) {
+      document.getElementById('sum-total').textContent    = o.total_attempts;
+      document.getElementById('sum-correct').textContent  = o.correct;
+      document.getElementById('sum-accuracy').textContent = o.total_attempts ? `${o.accuracy}%` : '0%';
+      document.getElementById('sum-speed').textContent    = o.total_attempts ? `${(o.avg_response_ms / 1000).toFixed(1)}s` : '0s';
+      document.getElementById('sum-level').textContent    = `Level ${o.difficulty_level}`;
+    }
+
+    function renderIntervalChart(intervals) {
+      new Chart(document.getElementById('chart-intervals'), {
+        type: 'bar',
+        data: {
+          labels: intervals.map(i => i.interval),
+          datasets: [{
+            label: 'Score %',
+            data: intervals.map(i => i.accuracy),
+            backgroundColor: intervals.map(i =>
+              i.accuracy >= 75 ? 'rgba(21,128,61,0.85)' :
+              i.accuracy >= 50 ? 'rgba(234,88,12,0.85)' : 'rgba(185,28,28,0.85)'),
+            borderColor: intervals.map(i =>
+              i.accuracy >= 75 ? C.mint : i.accuracy >= 50 ? C.gold : C.rose),
+            borderWidth: 0,
+            borderRadius: 3,
+          }],
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, grid: { color: C.grid }, ticks: { callback: v => v + '%' } },
+            x: { grid: { display: false }, ticks: { maxRotation: 60, minRotation: 40 } },
+          },
+        },
+      });
+    }
+
+    function renderDonut(o) {
+      new Chart(document.getElementById('chart-donut'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Right', 'Wrong'],
+          datasets: [{
+            data: [o.correct, o.total_attempts - o.correct],
+            backgroundColor: ['rgba(22,163,74,0.8)', 'rgba(220,38,38,0.8)'],
+            borderColor: ['#ffffff', '#ffffff'],
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          maintainAspectRatio: false,
+          cutout: '62%',
+          plugins: { legend: { position: 'bottom', labels: { color: C.ivory } } },
+        },
+      });
+    }
+
+    function renderTrend(trend) {
+      new Chart(document.getElementById('chart-trend'), {
+        type: 'line',
+        data: {
+          labels: trend.map(t => t.attempt),
+          datasets: [{
+            label: 'Score %',
+            data: trend.map(t => t.rolling_accuracy),
+            borderColor: C.gold,
+            backgroundColor: 'rgba(234,88,12,0.08)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: trend.length > 40 ? 0 : 3,
+            pointBackgroundColor: C.gold,
+          }],
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, grid: { color: C.grid }, ticks: { callback: v => v + '%' } },
+            x: { grid: { display: false }, title: { display: true, text: 'Answer number' } },
+          },
+        },
+      });
+    }
+
+    function renderTable(intervals) {
+      const wrap = document.getElementById('table-wrap');
+      if (!intervals.length) {
+        wrap.innerHTML = '<p class="empty-note">Nothing here yet. Play a few rounds on the Practice page first.</p>';
+        return;
+      }
+      wrap.innerHTML = `
+        <table class="report-table">
+          <thead><tr>
+            <th>Interval</th><th>Played</th><th>Right</th><th>Wrong</th><th>Score</th>
+          </tr></thead>
+          <tbody>
+            ${intervals.map(i => `
+              <tr>
+                <td>${i.interval}</td>
+                <td>${i.total}</td>
+                <td class="text-mint">${i.correct}</td>
+                <td class="text-rose">${i.misses}</td>
+                <td><span class="acc-pill ${accClass(i.accuracy)}">${i.accuracy}%</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    function renderFeedback(fb) {
+      document.getElementById('feedback-headline').textContent = fb.headline;
+      document.getElementById('feedback-list').innerHTML =
+        fb.points.map(p => `<li>${p}</li>`).join('');
+    }
+
+    (async () => {
+      try {
+        const me = await fetch('/api/auth/me');
+        if (!me.ok) { window.location.href = '/login'; return; }
+      } catch { window.location.href = '/login'; return; }
+
+      let report;
+      try {
+        report = await fetchReportData();
+      } catch (e) {
+        document.getElementById('feedback-headline').textContent = 'We couldn\'t load your progress. Please refresh the page.';
+        return;
+      }
+      if (!report) return;
+
+      renderSummary(report.overall);
+      renderIntervalChart(report.intervals);
+      renderDonut(report.overall);
+      renderTrend(report.trend);
+      renderTable(report.intervals);
+      renderFeedback(report.feedback);
+    })();
+  </script>
+</body>
+</html>

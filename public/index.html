@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PitchWeaver · Practice</title>
+  <link rel="stylesheet" href="style.css?v=20261101b">
+</head>
+<body>
+
+  <header class="app-header">
+    <a class="header-brand" href="/">
+      <span class="header-clef">𝄞</span>
+      <span class="header-title">PitchWeaver</span>
+    </a>
+    <nav class="header-nav">
+      <a class="nav-link active" href="/">Practice</a>
+      <a class="nav-link" href="dashboard.html">My Progress</a>
+      <a class="nav-link" href="about.html">About</a>
+      <button class="nav-link" onclick="showSaveReportDialog()">Save Report</button>
+      <button class="nav-link nav-signout" onclick="handleLogout()">Sign Out</button>
+    </nav>
+  </header>
+
+  <div id="feedback-flash"></div>
+
+  <div class="main-layout">
+
+    <main class="stage">
+
+      <section class="listen">
+        <p class="level-line" id="difficulty-label">Level 1: Foundations</p>
+        <h1 id="status-text">Press Play to hear your first interval</h1>
+        <div class="listen-actions">
+          <button class="btn-play" id="btn-play" onclick="startExercise(event)">
+            Play Interval
+          </button>
+          <button class="btn-replay" id="btn-replay" onclick="handleReplayClick()" disabled>
+            Replay
+          </button>
+          <div class="metronome-loader" id="metronome-loader">
+            <div class="metronome-arm"></div>
+            <div class="metronome-dot"></div>
+          </div>
+        </div>
+        <div class="waveform-wrap">
+          <canvas id="waveform-canvas"></canvas>
+          <div class="waveform-idle-label" id="waveform-idle"></div>
+        </div>
+      </section>
+
+      <section class="answer">
+        <h2 class="section-title">Which interval did you hear?</h2>
+        <div class="interval-grid" id="interval-grid"></div>
+      </section>
+
+      <section class="score">
+        <h2 class="section-title">Your session</h2>
+        <div class="staff-wrap">
+          <p class="staff-empty-msg" id="staff-empty-msg">Each answer will appear here. A green note means you got it right, a red rest means you missed it.</p>
+          <svg id="staff-svg" height="80" style="display:none"></svg>
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="sidebar">
+
+      <section>
+        <div class="section-head">
+          <h2 class="section-title">This session</h2>
+          <button class="btn-reset" id="btn-reset" onclick="handleResetClick()">Start over</button>
+        </div>
+        <div class="stats-strip">
+          <div class="stat-box">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">played</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value text-mint" id="stat-correct">0</div>
+            <div class="stat-label">right</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value text-gold" id="stat-accuracy">0%</div>
+            <div class="stat-label">score</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-panel">
+        <h2 class="section-title">AI Conductor</h2>
+        <div id="ai-state-badge" class="ai-state-badge COLLECTING_DATA">Warming Up</div>
+        <p id="ai-state-label" class="ai-state-label">Answer a few intervals so I can get to know your ear.</p>
+        <p id="ai-action-text" class="ai-action-text"></p>
+        <div class="tuning-gauge-wrap">
+          <div class="tuning-gauge-track">
+            <div class="tuning-center-line"></div>
+            <div class="tuning-gauge-fill" id="gauge-fill" style="width:50%"></div>
+            <div class="tuning-gauge-needle" id="gauge-needle" style="left:50%"></div>
+          </div>
+          <div class="tuning-gauge-ends"><span>Picks too narrow</span><span>Spot on</span><span>Picks too wide</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="section-title">Needs work</h2>
+        <div class="attention-list" id="attention-list">
+          <p class="attention-empty">No tricky intervals yet. Keep going!</p>
+        </div>
+      </section>
+
+      <section class="accuracy">
+        <h2 class="section-title">Interval accuracy</h2>
+        <div class="progress-rows" id="progress-rows">
+          <p class="attention-empty">Play a few rounds to see how you are doing.</p>
+        </div>
+      </section>
+
+    </aside>
+  </div>
+
+  <div class="modal-overlay hidden" id="pw-modal-overlay">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="pw-modal-title">
+      <div class="modal-title" id="pw-modal-title">Change Password</div>
+      <form id="pw-form" onsubmit="submitChangePassword(event)">
+        <div class="modal-field">
+          <label for="pw-current">Current password</label>
+          <input type="password" id="pw-current" required autocomplete="current-password">
+        </div>
+        <div class="modal-field">
+          <label for="pw-new">New password (at least 8 characters)</label>
+          <input type="password" id="pw-new" required minlength="8" autocomplete="new-password">
+        </div>
+        <div class="modal-field">
+          <label for="pw-confirm">Confirm new password</label>
+          <input type="password" id="pw-confirm" required minlength="8" autocomplete="new-password">
+        </div>
+        <div class="modal-error hidden" id="pw-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn modal-btn-secondary" onclick="closeChangePasswordModal()">Cancel</button>
+          <button type="submit" class="modal-btn modal-btn-primary" id="pw-submit">Change Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-message" id="modal-message"></div>
+      <div class="modal-actions" id="modal-actions">
+      </div>
+    </div>
+  </div>
+
+  <script src="report.js?v=20261101"></script>
+  <script src="app.js?v=20261101"></script>
+</body>
+</html>
